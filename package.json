@@ -1,0 +1,29 @@
+{
+  "name": "heybox-mod-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "小黑盒Mod管理器运行时API、类型和其他文档",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts"
+    },
+    "./types": {
+      "types": "./types/index.d.ts"
+    },
+    "./api": {
+      "types": "./api/index.d.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaoheihe-lab/heybox-mod-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xiaoheihe-lab/heybox-mod-api/issues"
+  },
+  "homepage": "https://github.com/xiaoheihe-lab/heybox-mod-api#readme"
+}
