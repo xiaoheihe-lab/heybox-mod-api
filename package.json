@@ -1,19 +1,28 @@
 {
   "name": "heybox-mod-api",
-  "version": "1.0.0",
-  "private": true,
+  "version": "0.0.1-alpha1",
   "description": "小黑盒Mod管理器运行时API、类型和其他文档",
-  "types": "./types/index.d.ts",
+  "types": "./index.d.ts",
+  "files": [
+    "index.d.ts",
+    "types",
+    "apis",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
-      "types": "./types/index.d.ts"
+      "types": "./index.d.ts"
     },
     "./types": {
       "types": "./types/index.d.ts"
     },
-    "./api": {
-      "types": "./api/index.d.ts"
+    "./apis": {
+      "types": "./apis/index.d.ts"
     }
+  },
+  "publishConfig": {
+    "registry": "https://registry.debugmode.cn"
   },
   "repository": {
     "type": "git",
