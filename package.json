@@ -1,6 +1,6 @@
 {
   "name": "heybox-mod-api",
-  "version": "1.7.0-alpha1",
+  "version": "1.8.0-alpha1",
   "description": "小黑盒Mod管理器运行时API、类型和其他文档",
   "types": "./index.d.ts",
   "files": [
