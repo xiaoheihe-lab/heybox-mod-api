@@ -92,10 +92,94 @@ export interface IExtensionUiRequestOptions {
   timeoutMs?: number
 }
 
+export type ManagedDeploymentEntry = {
+  modKey: string
+  modId?: number
+  fileId?: number
+  versionId?: number
+  modType?: string
+  targetPath: string
+  absolutePath: string
+  expectedHash: string
+  currentHash?: string | null
+  exists?: boolean
+  metaInfo?: any
+}
+
+export type ManagedDeploymentGameFile = {
+  targetPath: string
+  absolutePath: string
+  hash?: string | null
+  exists?: boolean
+  managed?: boolean
+}
+
+export type ManagedDeploymentMutationSnapshot = {
+  gamePath: string
+  entries: ManagedDeploymentEntry[]
+  gameFiles?: ManagedDeploymentGameFile[]
+}
+
+export type ManagedDeploymentMutationOperation =
+  | {
+      type: 'moveDeployment'
+      modKey: string
+      from: string
+      to: string
+      expectedHash?: string
+    }
+  | {
+      type: 'adoptDeployment'
+      modKey: string
+      from: string
+      to: string
+      expectedHash?: string
+    }
+  | {
+      type: 'setModMetadata'
+      modKey: string
+      patch: Record<string, unknown>
+    }
+
+export type ManagedDeploymentMutationOptions = {
+  modType?: string
+  /** @deprecated Use includeManagedCurrentHashes/includeGameFileHashes for finer control. */
+  includeCurrentHashes?: boolean
+  includeManagedCurrentHashes?: boolean
+  includeGameFileHashes?: boolean
+  includeGameFiles?: {
+    directories?: string[]
+    extensions?: string[]
+  }
+}
+
+export type ManagedDeploymentMutationResult = {
+  ok: boolean
+  applied: number
+  warnings: Array<{ message: string; details?: Record<string, unknown> }>
+}
+
+export type ManagedDeploymentMutation = ManagedDeploymentMutationSnapshot & {
+  moveDeployment(input: Extract<ManagedDeploymentMutationOperation, { type: 'moveDeployment' }>): void
+  adoptDeployment(input: Extract<ManagedDeploymentMutationOperation, { type: 'adoptDeployment' }>): void
+  setModMetadata(input: Extract<ManagedDeploymentMutationOperation, { type: 'setModMetadata' }>): void
+  warn(message: string, details?: Record<string, unknown>): void
+}
+
+export type ManagedDeploymentHookPhase = 'afterEnable' | 'afterDisable' | 'afterUninstall'
+
+export interface IExtensionVfsApi {
+  runManagedDeploymentMutation<T = unknown>(
+    options: ManagedDeploymentMutationOptions,
+    callback: (mutation: ManagedDeploymentMutation) => T | Promise<T>
+  ): Promise<ManagedDeploymentMutationResult>
+}
+
 export interface IExtensionApi {
   events: IExtensionEventApi
   emitAndAwait<T = any>(eventName: string, ...args: any[]): Promise<T[]>
   onAsync(eventName: string, listener: (...args: any[]) => PromiseLike<any> | any): void
+  vfs: IExtensionVfsApi
   util: {
     GameStoreHelper: IGameStoreHelper
     steam: {
@@ -211,6 +295,12 @@ export interface IExtensionContext {
   registerInstaller(typeId: string, priority: number, test: InstallerTest, install: InstallerInstall): void
 
   registerAttributeExtractor(priority: number, extractor: AttributeExtractor): void
+
+  registerManagedDeploymentHook(
+    phase: ManagedDeploymentHookPhase,
+    options: { modType?: string },
+    callback: (payload: Record<string, unknown>) => unknown | Promise<unknown>
+  ): void
 
   /** 注册自定义动作（如部署后回调） */
   registerAction(
