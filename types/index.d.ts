@@ -76,6 +76,20 @@ export interface IExtensionUiRequestPayload {
   type?: string
   title?: string
   content?: string
+  choices?: Array<{
+    id: string
+    text?: string
+    description?: string
+    value?: boolean
+    disabled?: boolean
+    level?: number
+    selectMode?: 'single' | 'checkbox' | 'radio' | 'none'
+    groupId?: string
+    payload?: unknown
+  }>
+  choiceMode?: 'single' | 'multiple'
+  selectedChoiceIds?: string[]
+  defaultChoiceId?: string
   confirm?: { text?: string; type?: string; visible?: boolean }
   cancel?: { text?: string; type?: string; visible?: boolean }
   [key: string]: unknown
