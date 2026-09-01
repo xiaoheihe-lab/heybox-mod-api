@@ -1,6 +1,13 @@
 /**
  * 扩展门面与游戏配置类型（第三方扩展仅通过 IExtensionContext 与基座交互）
  */
+import type { FomodDeploymentOptions, FomodExtensionApi } from './fomod'
+import type { LoadOrderRegistration, LoadOrderSnapshot } from './load-order'
+import type { SteamPrerequisiteRegistration } from './steam-prerequisite'
+
+export type * from './fomod'
+export type * from './load-order'
+export type * from './steam-prerequisite'
 
 /** Steam 游戏信息 */
 export interface SteamGameInfo {
@@ -48,9 +55,23 @@ export interface IExtensionFsApi {
   readFileAsync(filePath: unknown, options?: ExtensionFsReadFileOptions): Promise<ExtensionFsReadFileResult>
 }
 
+export interface IExtensionArchiveEntry {
+  path: string
+  size?: number
+  isDirectory: boolean
+}
+
 export interface IExtensionArchiveApi {
   extractZip(archivePath: unknown, destinationPath: unknown): Promise<string[]>
   extractZipAsync(archivePath: unknown, destinationPath: unknown): Promise<string[]>
+  extractRar(archivePath: unknown, destinationPath: unknown): Promise<string[]>
+  extractRarAsync(archivePath: unknown, destinationPath: unknown): Promise<string[]>
+  extract7z(archivePath: unknown, destinationPath: unknown): Promise<string[]>
+  extract7zAsync(archivePath: unknown, destinationPath: unknown): Promise<string[]>
+  extract(archivePath: unknown, destinationPath: unknown): Promise<string[]>
+  extractAsync(archivePath: unknown, destinationPath: unknown): Promise<string[]>
+  list(archivePath: unknown): Promise<IExtensionArchiveEntry[]>
+  listAsync(archivePath: unknown): Promise<IExtensionArchiveEntry[]>
 }
 
 export interface IExtensionFileParseApi {
@@ -70,6 +91,18 @@ export interface IExtensionSteamLaunchOptionsEntry {
   userId: string
   localConfigPath: string
   launchOptions: string
+}
+
+export interface IExtensionSteamLaunchOptionFailure {
+  userId: string
+  localConfigPath: string
+  message: string
+}
+
+export interface IExtensionSteamEnsureLaunchOptionResult {
+  entries: IExtensionSteamLaunchOptionsEntry[]
+  updatedUserIds: string[]
+  failures: IExtensionSteamLaunchOptionFailure[]
 }
 
 export interface IExtensionUiRequestPayload {
@@ -194,12 +227,16 @@ export interface IExtensionApi {
   emitAndAwait<T = any>(eventName: string, ...args: any[]): Promise<T[]>
   onAsync(eventName: string, listener: (...args: any[]) => PromiseLike<any> | any): void
   vfs: IExtensionVfsApi
+  loadOrder: {
+    deploy(providerId: string): Promise<LoadOrderSnapshot>
+  }
   util: {
     GameStoreHelper: IGameStoreHelper
     steam: {
       findByAppId(appId: string | number): Promise<{ gamePath: string } | null>
       getLaunchOptions(appId: string | number): Promise<IExtensionSteamLaunchOptionsEntry[]>
       setLaunchOptions(appId: string | number, launchOptions: string): Promise<IExtensionSteamLaunchOptionsEntry[]>
+      ensureLaunchOptionArgument(appId: string | number, argument: string): Promise<IExtensionSteamEnsureLaunchOptionResult>
       clearLaunchOptions(appId: string | number): Promise<IExtensionSteamLaunchOptionsEntry[]>
       launchClient(): Promise<IExtensionUiResponse>
     }
@@ -207,6 +244,7 @@ export interface IExtensionApi {
       request(payload: IExtensionUiRequestPayload, options?: IExtensionUiRequestOptions): Promise<IExtensionUiResponse>
       notify(payload: IExtensionUiRequestPayload): void
     }
+    fomod: FomodExtensionApi
     path: IExtensionPathApi
     fs: IExtensionFsApi
     archive: IExtensionArchiveApi
@@ -221,10 +259,27 @@ export interface IExtensionApi {
   }
 }
 
+export type LocalModMarkType = 'prerequisite' | 'warning' | 'danger' | 'success'
+
+export interface LocalModMark {
+  type: LocalModMarkType
+  label: string
+}
+
+export interface LocalModFeature {
+  modId: number
+  pinned?: boolean
+  marked?: boolean
+  mark?: LocalModMark
+}
+
 /** 游戏基础描述；id 缺省时由加载流程注入为当前 appid */
 export interface GameConfig {
   id?: number | string | 'default'
-  queryPath?: () => string | undefined | Promise<string | undefined>
+  queryPath: () => string | undefined | Promise<string | undefined>
+  steamPrerequisites?: SteamPrerequisiteRegistration[]
+  /** 本地 Mod 列表的 extension 声明；重复 modId 以后声明为准。 */
+  localModFeatures?: LocalModFeature[]
   [key: string]: unknown
 }
 
@@ -243,6 +298,8 @@ export interface DeploymentOptions {
   /** 预留给未来其他动态参数 */
   /** SDK 内部传给 extension 的原始文件物理路径映射：archive relative path -> hash pool absolute path */
   sourcePathByFile?: Record<string, string>
+  /** FOMOD 专用部署上下文；storedState 由 SDK 注入。 */
+  fomod?: FomodDeploymentOptions
   /** 预留给未来其他动态参数 */
   [key: string]: unknown
 }
@@ -263,6 +320,38 @@ export type InstallerInstall = (
 export type AttributeExtractor = (
   modInfo: unknown,
   modPath: string
+) => Record<string, unknown> | Promise<Record<string, unknown>>
+
+export type FinalFileInstruction =
+  | {
+      readonly type: 'copy'
+      readonly source: string
+      readonly destination: string
+      readonly verification?: 'hash' | 'exists'
+      readonly conflictPolicy?: 'prompt' | 'overwrite'
+    }
+  | {
+      readonly type: 'generatefile'
+      readonly source?: string
+      readonly destination: string
+      readonly data?: string | Buffer | Uint8Array | null
+      readonly verification?: 'hash' | 'exists'
+      readonly conflictPolicy?: 'prompt' | 'overwrite'
+    }
+
+export interface PostInstallerAttributeContext {
+  appid: number
+  gameId: number
+  modKey: string
+  installerTypeId: string
+  modTypeId: string
+  stagingPath: string
+  archiveFiles: readonly string[]
+  instructions: readonly FinalFileInstruction[]
+}
+
+export type PostInstallerAttributeExtractor = (
+  context: PostInstallerAttributeContext
 ) => Record<string, unknown> | Promise<Record<string, unknown>>
 
 /** Vortex 风格的 ModType 注册参数 */
@@ -310,11 +399,15 @@ export interface IExtensionContext {
 
   registerAttributeExtractor(priority: number, extractor: AttributeExtractor): void
 
+  registerPostInstallerAttributeExtractor(priority: number, extractor: PostInstallerAttributeExtractor): void
+
   registerManagedDeploymentHook(
     phase: ManagedDeploymentHookPhase,
     options: { modType?: string },
     callback: (payload: Record<string, unknown>) => unknown | Promise<unknown>
   ): void
+
+  registerLoadOrder(options: LoadOrderRegistration): void
 
   /** 注册自定义动作（如部署后回调） */
   registerAction(
