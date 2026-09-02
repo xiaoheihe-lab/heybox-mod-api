@@ -1,57 +1,7 @@
 import type { IExtensionApi } from '../types'
 
-export type {
-  AttributeExtractor,
-  DeploymentOptions,
-  ExtensionEventListener,
-  ExtensionFsReadFileOptions,
-  ExtensionFsReadFileResult,
-  ExtensionMain,
-  FinalFileInstruction,
-  GameConfig,
-  IExtensionApi,
-  IExtensionArchiveApi,
-  IExtensionArchiveEntry,
-  IExtensionContext,
-  IExtensionEventApi,
-  IExtensionFileParseApi,
-  IExtensionFsApi,
-  IExtensionFsStats,
-  IExtensionPathApi,
-  IExtensionSteamEnsureLaunchOptionResult,
-  IExtensionSteamLaunchOptionFailure,
-  IExtensionSteamLaunchOptionsEntry,
-  IExtensionUiRequestOptions,
-  IExtensionUiRequestPayload,
-  IExtensionUiResponse,
-  IExtensionVfsApi,
-  IGameStoreHelper,
-  InstallerInstall,
-  InstallerTest,
-  LocalModFeature,
-  LocalModMark,
-  LocalModMarkType,
-  ManagedDeploymentEntry,
-  ManagedDeploymentGameFile,
-  ManagedDeploymentHookPhase,
-  ManagedDeploymentMutation,
-  ManagedDeploymentMutationOperation,
-  ManagedDeploymentMutationOptions,
-  ManagedDeploymentMutationResult,
-  ManagedDeploymentMutationSnapshot,
-  ModTypeRule,
-  PostInstallerAttributeContext,
-  PostInstallerAttributeExtractor,
-  SteamGameInfo,
-  VortexActionCallback,
-  VortexActionCondition,
-  VortexActionPropsCallback,
-  VortexRegisterModTypeOptions,
-} from '../types'
-
-export type * from '../types/fomod'
-export type * from '../types/load-order'
-export type * from '../types/steam-prerequisite'
+// 门面接口全量再导出（等价于 heybox-mod-api/types 的全部导出）
+export type * from '../types'
 
 export type ClientInvokeResult = any
 
