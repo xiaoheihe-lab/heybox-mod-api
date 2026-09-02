@@ -3,6 +3,8 @@
 小黑盒 Mod 管理器运行时 API 类型声明和文档。扩展（extension）开发者通过
 `IExtensionContext` 门面与 Mod 管理器基座交互，本包提供该门面的完整类型。
 
+📖 文档站点：<https://docs.xiaoheihe.cn/hb_mod_api/>
+
 ## 安装
 
 ```bash
@@ -73,13 +75,14 @@ npm publish --tag alpha  # 预发布版（如 1.17.0-alpha.x），不打 latest
 
 预发布版本不会被 `^1.x` 范围匹配，消费方需精确锁定版本号。
 
-## 文档站点（GitHub Pages）
+## 文档站点
 
+- 线上文档：<https://docs.xiaoheihe.cn/hb_mod_api/>（由本仓库 docs-site 构建，独立流水线部署）
+- 本仓库部署：`.github/workflows/deploy-docs.yml` 在推送到 `main` 时自动构建并发布到
+  GitHub Pages（<https://xiaoheihe-lab.github.io/heybox-mod-api/>）；workflow 会在首次
+  运行时自动启用 Pages（无需手动去 Settings 配置 Source）
 - 本地预览：`cd docs-site && npm run dev`（首次需 `npm install`）
 - 站点 base 固定为 `/heybox-mod-api/`（GitHub Pages 项目页路径），构建时无需额外配置
-- 部署：`.github/workflows/deploy-docs.yml` 在推送到 `main` 时自动构建并发布到
-  <https://xiaoheihe-lab.github.io/heybox-mod-api/>；workflow 会在首次运行时自动启用
-  Pages（无需手动去 Settings 配置 Source）
 
 ## 许可
 
