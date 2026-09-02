@@ -10,6 +10,8 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  # enablement: true 需要通过 API 启用 Pages 站点
+  administration: write
 
 concurrency:
   group: pages
@@ -39,6 +41,9 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        with:
+          # 若仓库尚未启用 Pages，自动开启（等价于 Settings → Pages → GitHub Actions）
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
