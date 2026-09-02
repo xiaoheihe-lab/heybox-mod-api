@@ -1,44 +1,7 @@
 import type { IExtensionApi } from '../types'
 
-export type {
-  AttributeExtractor,
-  DeploymentOptions,
-  ExtensionEventListener,
-  ExtensionFsReadFileOptions,
-  ExtensionFsReadFileResult,
-  ExtensionMain,
-  GameConfig,
-  IExtensionApi,
-  IExtensionArchiveApi,
-  IExtensionContext,
-  IExtensionEventApi,
-  IExtensionFileParseApi,
-  IExtensionFsApi,
-  IExtensionFsStats,
-  IExtensionPathApi,
-  IExtensionSteamLaunchOptionsEntry,
-  IExtensionUiRequestOptions,
-  IExtensionUiRequestPayload,
-  IExtensionUiResponse,
-  IExtensionVfsApi,
-  IGameStoreHelper,
-  InstallerInstall,
-  InstallerTest,
-  ManagedDeploymentEntry,
-  ManagedDeploymentGameFile,
-  ManagedDeploymentHookPhase,
-  ManagedDeploymentMutation,
-  ManagedDeploymentMutationOperation,
-  ManagedDeploymentMutationOptions,
-  ManagedDeploymentMutationResult,
-  ManagedDeploymentMutationSnapshot,
-  ModTypeRule,
-  SteamGameInfo,
-  VortexActionCallback,
-  VortexActionCondition,
-  VortexActionPropsCallback,
-  VortexRegisterModTypeOptions,
-} from '../types'
+// 门面接口全量再导出（等价于 heybox-mod-api/types 的全部导出）
+export type * from '../types'
 
 export type ClientInvokeResult = any
 
@@ -53,6 +16,8 @@ export declare class ClientInvokeError<T = any> extends Error {
   status: 'failed' | string
   result: T | null
   msg: string
+  /** 稳定的错误码；缺省回退到 status。 */
+  code: string
   constructor(input: string | { [k: string]: any })
 }
 
